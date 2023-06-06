@@ -1,0 +1,27 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:current
+    resource_class: medium
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: build Docker image
+          command: |
+            docker build --tag my-custom-image .
+      - run:
+          name: Run Docker container (background)
+          command: |
+            # run this container for 600s (10 mins)
+            docker run --name my-custom-container my-custom-image sleep 600
+          background: true
+      - run: docker ps
+      - run:
+          name: Run some commands against the container
+          command: |
+            # NOTE: this runs the commands INSIDE the container
+            docker exec my-custom-container terragrunt --version
+            docker exec my-custom-container helm version
